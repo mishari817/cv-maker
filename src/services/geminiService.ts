@@ -1,12 +1,24 @@
 import { GoogleGenAI, Type } from '@google/genai';
 import { ResumeData } from '../types';
 
-const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
+let aiClient: GoogleGenAI | null = null;
+
+function getAIClient() {
+  if (!aiClient) {
+    const apiKey = process.env.GEMINI_API_KEY;
+    if (!apiKey || apiKey === 'undefined') {
+      throw new Error('GEMINI_API_KEY is missing. AI features are disabled.');
+    }
+    aiClient = new GoogleGenAI({ apiKey });
+  }
+  return aiClient;
+}
 
 export async function processUserMessage(
   message: string,
   currentData: ResumeData
 ): Promise<{ reply: string; resumeData: ResumeData }> {
+  const ai = getAIClient();
   const prompt = `
     You are an expert ATS resume builder and career consultant.
     The user is providing information to build or update their resume.
