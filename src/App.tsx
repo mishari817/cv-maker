@@ -1,22 +1,16 @@
-import React, { useState, useRef } from 'react';
+import React, { useState } from 'react';
 import { initialData } from './data';
 import { ResumeData } from './types';
 import ResumePreview from './components/ResumePreview';
 import CoverLetterPreview from './components/CoverLetterPreview';
 import ChatAssistant from './components/ChatAssistant';
-import { FileText, Mail, Printer, Languages, Download, Loader2 } from 'lucide-react';
-import { toPng } from 'html-to-image';
-import { jsPDF } from 'jspdf';
+import { FileText, Mail, Printer, Languages } from 'lucide-react';
 
 export default function App() {
   const [history, setHistory] = useState<ResumeData[]>([initialData]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [language, setLanguage] = useState<'ar' | 'en'>('ar');
   const [activeTab, setActiveTab] = useState<'resume' | 'coverLetter'>('resume');
-  const [isDownloading, setIsDownloading] = useState(false);
-
-  const resumeRef = useRef<HTMLDivElement>(null);
-  const coverLetterRef = useRef<HTMLDivElement>(null);
 
   const data = history[currentIndex];
 
@@ -34,79 +28,8 @@ export default function App() {
     if (currentIndex < history.length - 1) setCurrentIndex(currentIndex + 1);
   };
 
-  const handleDownloadPDFs = async () => {
-    if (isDownloading) return;
-    setIsDownloading(true);
-
-    try {
-      const generatePDF = async (element: HTMLElement, filename: string) => {
-        // Wait a bit for any pending renders and fonts
-        await new Promise(resolve => setTimeout(resolve, 800));
-        
-        // Temporarily add a class to hide interactive elements
-        element.classList.add('pdf-exporting');
-        
-        try {
-          // Use html-to-image which handles RTL and Arabic shaping much better than html2canvas
-          const dataUrl = await toPng(element, {
-            quality: 1,
-            pixelRatio: 2,
-            backgroundColor: '#ffffff',
-            style: {
-              transform: 'scale(1)',
-              direction: language === 'ar' ? 'rtl' : 'ltr'
-            }
-          });
-          
-          element.classList.remove('pdf-exporting');
-          
-          const pdf = new jsPDF('p', 'mm', 'a4');
-          const pdfWidth = pdf.internal.pageSize.getWidth();
-          const pageHeight = pdf.internal.pageSize.getHeight();
-          
-          // Create a temporary image to get dimensions
-          const img = new Image();
-          img.src = dataUrl;
-          await new Promise((resolve) => (img.onload = resolve));
-          
-          const imgWidth = img.width;
-          const imgHeight = img.height;
-          const ratio = pdfWidth / imgWidth;
-          const totalPdfHeight = imgHeight * ratio;
-          
-          let heightLeft = totalPdfHeight;
-          let position = 0;
-          
-          pdf.addImage(dataUrl, 'PNG', 0, position, pdfWidth, totalPdfHeight);
-          heightLeft -= pageHeight;
-          
-          while (heightLeft >= 0) {
-            position = heightLeft - totalPdfHeight;
-            pdf.addPage();
-            pdf.addImage(dataUrl, 'PNG', 0, position, pdfWidth, totalPdfHeight);
-            heightLeft -= pageHeight;
-          }
-          
-          pdf.save(filename);
-        } catch (err) {
-          element.classList.remove('pdf-exporting');
-          throw err;
-        }
-      };
-
-      if (resumeRef.current) {
-        await generatePDF(resumeRef.current, `${data.fullName || 'Resume'}_Resume.pdf`);
-      }
-      
-      if (coverLetterRef.current) {
-        await generatePDF(coverLetterRef.current, `${data.fullName || 'Cover_Letter'}_CoverLetter.pdf`);
-      }
-    } catch (error) {
-      console.error('Error generating PDFs:', error);
-      alert(language === 'ar' ? 'حدث خطأ أثناء تحميل الملفات. يرجى المحاولة مرة أخرى.' : 'An error occurred while downloading files. Please try again.');
-    } finally {
-      setIsDownloading(false);
-    }
+  const handlePrint = () => {
+    window.print();
   };
 
   const toggleLanguage = () => {
@@ -154,15 +77,12 @@ export default function App() {
                 <span className="hidden sm:inline">{isAr ? 'English' : 'العربية'}</span>
               </button>
               <button
-                onClick={handleDownloadPDFs}
-                disabled={isDownloading}
-                className="flex items-center gap-2 px-3 sm:px-4 py-2 rounded-md text-xs sm:text-sm font-medium bg-indigo-600 text-white hover:bg-indigo-700 transition-colors disabled:opacity-70 shadow-sm"
+                onClick={handlePrint}
+                className="flex items-center gap-2 px-3 sm:px-4 py-2 rounded-md text-xs sm:text-sm font-medium bg-indigo-600 text-white hover:bg-indigo-700 transition-colors shadow-sm"
               >
-                {isDownloading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Download className="w-4 h-4" />}
+                <Printer className="w-4 h-4" />
                 <span className="hidden xs:inline">
-                  {isDownloading 
-                    ? (isAr ? 'جاري...' : 'Downloading...') 
-                    : (isAr ? 'تحميل' : 'Download')}
+                  {isAr ? 'طباعة / PDF' : 'Print / PDF'}
                 </span>
               </button>
             </div>
@@ -187,7 +107,7 @@ export default function App() {
           </div>
 
           {/* Preview Area */}
-          <div className="flex-1 print:w-full flex justify-center overflow-x-hidden pb-8">
+          <div className="flex-1 print:w-full flex justify-center overflow-x-hidden pb-8 print:pb-0">
             <div className="print-only w-full max-w-[210mm] origin-top transition-transform duration-300 sm:scale-100 scale-[0.45] xs:scale-[0.6] md:scale-[0.85] lg:scale-100">
               {activeTab === 'resume' ? (
                 <ResumePreview data={data} language={language} onUpdate={handleUpdateData} />
@@ -198,16 +118,6 @@ export default function App() {
           </div>
         </div>
       </main>
-
-      {/* Hidden container for PDF generation */}
-      <div className="fixed top-0 left-[-9999px] pointer-events-none z-[-1]" dir={isAr ? 'rtl' : 'ltr'}>
-        <div ref={resumeRef} className="w-[210mm] bg-white font-sans">
-          <ResumePreview data={data} language={language} onUpdate={handleUpdateData} />
-        </div>
-        <div ref={coverLetterRef} className="w-[210mm] bg-white font-sans">
-          <CoverLetterPreview data={data} language={language} onUpdate={handleUpdateData} />
-        </div>
-      </div>
     </div>
   );
 }

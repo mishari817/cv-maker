@@ -104,12 +104,18 @@ export async function processUserMessage(
   let text = response.text;
   if (!text) throw new Error('No response from AI');
   
-  text = text.trim();
-  if (text.startsWith('```json')) {
-    text = text.replace(/^```json/, '').replace(/```$/, '').trim();
-  } else if (text.startsWith('```')) {
-    text = text.replace(/^```/, '').replace(/```$/, '').trim();
+  // Extract JSON from markdown blocks if present
+  const jsonMatch = text.match(/```(?:json)?\s*([\s\S]*?)\s*```/i);
+  if (jsonMatch) {
+    text = jsonMatch[1];
+  } else {
+    text = text.trim();
   }
   
-  return JSON.parse(text);
+  try {
+    return JSON.parse(text);
+  } catch (e) {
+    console.error("Failed to parse AI response:", text);
+    throw new Error("Failed to parse AI response. Please try again.");
+  }
 }

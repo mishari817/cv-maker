@@ -87,7 +87,7 @@ export default function EditableText({
     <Component
       onClick={() => setIsEditing(true)}
       className={`cursor-pointer hover:bg-yellow-50 hover:outline hover:outline-1 hover:outline-yellow-400 rounded px-1 transition-all duration-200 ${
-        !value ? 'text-gray-400 italic' : ''
+        !value ? 'text-gray-400 italic print:hidden' : ''
       } ${className}`}
       title="Click to edit"
       dir="auto"

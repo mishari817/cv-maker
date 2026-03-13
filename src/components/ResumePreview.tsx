@@ -70,7 +70,7 @@ export default function ResumePreview({ data, language, onUpdate }: Props) {
 
   return (
     <div
-      className="bg-white text-black p-6 @xl:p-8 mx-auto shadow-lg print:shadow-none print:p-0 font-sans w-full max-w-[210mm] @container"
+      className="bg-white text-black p-6 @xl:p-8 mx-auto shadow-lg print:shadow-none print:p-10 font-sans w-full max-w-[210mm] @container"
       style={{ minHeight: '297mm', direction: dir }}
     >
       {/* Header */}
@@ -142,7 +142,7 @@ export default function ResumePreview({ data, language, onUpdate }: Props) {
           />
           <div className="space-y-4">
           {data.experience.map((exp, idx) => (
-            <div key={exp.id} className="relative group">
+            <div key={exp.id || `exp-${idx}`} className="relative group">
               <button
                 onClick={() => deleteArrayItem('experience', idx)}
                 className="absolute -right-8 top-0 text-red-500 opacity-0 group-hover:opacity-100 transition-opacity no-print p-1 hover:bg-red-50 rounded"
@@ -203,7 +203,7 @@ export default function ResumePreview({ data, language, onUpdate }: Props) {
           />
           <div className="space-y-3">
           {data.education.map((edu, idx) => (
-            <div key={edu.id} className="flex flex-col @sm:flex-row @sm:justify-between @sm:items-baseline relative group gap-1 @sm:gap-0">
+            <div key={edu.id || `edu-${idx}`} className="flex flex-col @sm:flex-row @sm:justify-between @sm:items-baseline relative group gap-1 @sm:gap-0">
               <button
                 onClick={() => deleteArrayItem('education', idx)}
                 className="absolute -right-8 top-0 text-red-500 opacity-0 group-hover:opacity-100 transition-opacity no-print p-1 hover:bg-red-50 rounded"

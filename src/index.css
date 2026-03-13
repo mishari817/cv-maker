@@ -43,26 +43,23 @@
     background: white;
     margin: 0;
     padding: 0;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
   }
   .no-print {
     display: none !important;
   }
   .print-only {
     display: block !important;
-  }
-  .page-break {
-    page-break-before: always;
+    transform: none !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    box-shadow: none !important;
   }
   @page {
+    size: A4 portrait;
     margin: 0;
   }
-}
-
-.pdf-exporting .no-print {
-  display: none !important;
-}
-
-.pdf-exporting > div {
-  box-shadow: none !important;
-  margin: 0 !important;
 }

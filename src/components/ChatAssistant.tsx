@@ -61,6 +61,16 @@ export default function ChatAssistant({ currentData, onUpdateData, language, onU
         hiddenSections: currentData.hiddenSections
       };
       
+      // Ensure arrays exist
+      mergedData.experience = mergedData.experience || [];
+      mergedData.education = mergedData.education || [];
+      mergedData.skills = mergedData.skills || [];
+      mergedData.languages = mergedData.languages || [];
+      
+      // Add IDs if missing
+      mergedData.experience = mergedData.experience.map(e => ({ ...e, id: e.id || Date.now().toString() + Math.random() }));
+      mergedData.education = mergedData.education.map(e => ({ ...e, id: e.id || Date.now().toString() + Math.random() }));
+      
       onUpdateData(mergedData);
       setMessages(prev => [...prev, { id: Date.now().toString(), role: 'ai', text: result.reply }]);
     } catch (error: any) {

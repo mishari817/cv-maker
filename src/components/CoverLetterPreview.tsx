@@ -31,7 +31,7 @@ export default function CoverLetterPreview({ data, language, onUpdate }: Props) 
 
   return (
     <div
-      className="bg-white text-black p-6 @xl:p-12 mx-auto shadow-lg print:shadow-none print:p-0 font-sans w-full max-w-[210mm] @container"
+      className="bg-white text-black p-6 @xl:p-12 mx-auto shadow-lg print:shadow-none print:p-12 font-sans w-full max-w-[210mm] @container"
       style={{ minHeight: '297mm', direction: dir }}
     >
       {/* Header */}
