@@ -62,15 +62,31 @@ export default function App() {
           
           const pdf = new jsPDF('p', 'mm', 'a4');
           const pdfWidth = pdf.internal.pageSize.getWidth();
+          const pageHeight = pdf.internal.pageSize.getHeight();
           
           // Create a temporary image to get dimensions
           const img = new Image();
           img.src = dataUrl;
           await new Promise((resolve) => (img.onload = resolve));
           
-          const pdfHeight = (img.height * pdfWidth) / img.width;
+          const imgWidth = img.width;
+          const imgHeight = img.height;
+          const ratio = pdfWidth / imgWidth;
+          const totalPdfHeight = imgHeight * ratio;
           
-          pdf.addImage(dataUrl, 'PNG', 0, 0, pdfWidth, pdfHeight);
+          let heightLeft = totalPdfHeight;
+          let position = 0;
+          
+          pdf.addImage(dataUrl, 'PNG', 0, position, pdfWidth, totalPdfHeight);
+          heightLeft -= pageHeight;
+          
+          while (heightLeft >= 0) {
+            position = heightLeft - totalPdfHeight;
+            pdf.addPage();
+            pdf.addImage(dataUrl, 'PNG', 0, position, pdfWidth, totalPdfHeight);
+            heightLeft -= pageHeight;
+          }
+          
           pdf.save(filename);
         } catch (err) {
           element.classList.remove('pdf-exporting');
@@ -184,7 +200,7 @@ export default function App() {
       </main>
 
       {/* Hidden container for PDF generation */}
-      <div className="fixed top-0 left-0 w-0 h-0 overflow-hidden pointer-events-none opacity-0 z-[-1]" dir={isAr ? 'rtl' : 'ltr'}>
+      <div className="fixed top-0 left-[-9999px] pointer-events-none z-[-1]" dir={isAr ? 'rtl' : 'ltr'}>
         <div ref={resumeRef} className="w-[210mm] bg-white font-sans">
           <ResumePreview data={data} language={language} onUpdate={handleUpdateData} />
         </div>

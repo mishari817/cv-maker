@@ -30,7 +30,7 @@ export async function processUserMessage(
     ${message}
     
     Task:
-    1. Update the current resume data with the new information provided by the user.
+    1. Update the current resume data with the new information provided by the user. YOU MUST RETURN THE ENTIRE RESUME DATA OBJECT, including all existing fields that were not modified. Do not omit any existing data.
     2. If the user provides work experience, rewrite the description using the STAR method (Situation, Task, Action, Result) and ATS-friendly keywords. Make it professional.
     3. Provide a friendly conversational reply acknowledging the updates, and ask for any missing information if necessary.
     4. Respond in the same language the user used in their message (Arabic or English).
@@ -101,8 +101,15 @@ export async function processUserMessage(
     },
   });
 
-  const text = response.text;
+  let text = response.text;
   if (!text) throw new Error('No response from AI');
+  
+  text = text.trim();
+  if (text.startsWith('```json')) {
+    text = text.replace(/^```json/, '').replace(/```$/, '').trim();
+  } else if (text.startsWith('```')) {
+    text = text.replace(/^```/, '').replace(/```$/, '').trim();
+  }
   
   return JSON.parse(text);
 }

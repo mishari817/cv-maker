@@ -61,3 +61,8 @@
 .pdf-exporting .no-print {
   display: none !important;
 }
+
+.pdf-exporting > div {
+  box-shadow: none !important;
+  margin: 0 !important;
+}

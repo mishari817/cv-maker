@@ -52,7 +52,16 @@ export default function ChatAssistant({ currentData, onUpdateData, language, onU
 
     try {
       const result = await processUserMessage(userMsg, currentData);
-      onUpdateData(result.resumeData);
+      
+      // Merge the AI's response with the current data to preserve fields not in the schema
+      const mergedData = {
+        ...currentData,
+        ...result.resumeData,
+        sectionTitles: currentData.sectionTitles,
+        hiddenSections: currentData.hiddenSections
+      };
+      
+      onUpdateData(mergedData);
       setMessages(prev => [...prev, { id: Date.now().toString(), role: 'ai', text: result.reply }]);
     } catch (error: any) {
       console.error('Error processing message:', error);
